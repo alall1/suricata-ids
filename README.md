@@ -46,7 +46,9 @@ Next, go to each VM's network settings and add the appropriate host-only adapter
 </p>
 <p align="center">IDS /etc/network/interfaces</p>
 
-Finally, edit /etc/nftables.conf and /etc/sysctl.conf as specified [here](setup).
+Finally, edit /etc/nftables.conf and /etc/sysctl.conf as specified [here](setup). From the attacker VM, ping the IP address of the victim VM and vice versa to make sure the IP forwarding works. From the IDS VM, use tcpdump on one of the networks to view the ICMP traffic going back and forth between the attacker and the victim. 
+
+
   
 **Vulnerable Web App Setup:**  
 First, install Apache, MySQL, PHP, and all the associated libraries. Next, create the intentionally vulnerable database, using plaintext to store usernames and passwords. Finally, use insecure practices in the PHP file, like not sanitizing inputs and directly using parameters in database queries.
