@@ -23,7 +23,17 @@ The attacker at 10.10.0.2 uses the gateway 10.10.0.10, the IDS VM, to send packe
 | Attacker | Kali | Offensive | Host-Only | 10.10.0.2 | 4GB | 2 cores |
 | Victim | Debian 13 | Vulnerable Web App | Host-Only | 10.20.0.2 | 2GB | 2 cores |
 | IDS | Debian 13 | Inline Routing & IDS | Host-Only & Host-Only | 10.10.0.10 & 10.20.0.10 | 2GB | 2 cores |
+
+**Inline Routing Setup:** 
+First, I started with setting up the inline routing network, as inline routing is the foundation of this project. The first step is to navigate to the network manager in VirtualBox and add two host-only networks. Inline routing can also be done on a single network, but I decided to make two separate networks so the distinction between the attacker and the victim would be clear. 
+
+IMAGE OF NETWORK MANAGER
+
+Next, go to each VM's network settings and add the appropriate host-only adapters: vboxnetA for the attacker, vboxnetB for the victim, and two adapters for vboxnetA and vboxnetB on the IDS VM. To verify, run each VM and check the networks with "ip a" on the command line. Each one should have an IP in their specific subnets, and for the IDS VM it should have two networks(eth0 and eth1 or enp0s8 and enp0s9) with IPs in both subnets. I would recommend adding a static IP for the IDS VM, as well as the attacker and victim. You can do this by modifying /etc/network/interfaces, which you will need to add these changes to enable IP forwarding:
+
+IMAGES OF ATTACKER, VICTIM, and IDS /etc/network/interfaces
+
+Finally, add the necessary nftables rules as specified HERE(ADD LINK TO SETUP).
   
 **Vulnerable Web App Setup:**  
 First, install Apache, MySQL, PHP, and all the associated libraries. Next, create the intentionally vulnerable database, using plaintext to store usernames and passwords. Finally, use insecure practices in the PHP file, like not sanitizing inputs and directly using parameters in database queries.
-
