@@ -28,6 +28,7 @@
     sudo nano /etc/suricata/suricata.yaml
         runmode: workers
         $HOME_NET: [10.20.0.0/24]      # The victim subnet
+        $EXTERNAL_NET: !$HOME_NET       # Everything that is not the victim subnet
         default-rule-path: /etc/suricata/rules
         rule-files:
           - suricata.rules
