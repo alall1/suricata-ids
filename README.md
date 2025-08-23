@@ -1,5 +1,5 @@
 # I. Introduction
-To gain hands-on experience with networks, cyberattacks, and intrusion detection systems(IDS), I created a virtual environment to simulate attacks on a vulnerable web application. To detect the attacks, I wrote custom rules for specific attacks in Suricata and used Evebox for visualizing alerts. This project has improved my skills in Linux, SQL, PHP, network architecture, and using virtual machines.
+To gain hands-on experience with networks, cyberattacks, and intrusion detection systems(IDS), I created a virtual environment to simulate attacks on a vulnerable web application. To detect the attacks, I wrote custom rules for specific attacks in Suricata and used Evebox for visualizing alerts. This project has improved my skills in network architecture, network security, intrusion detection, Linux, SQL, and PHP, as well as using virtual machines.
 
 The tools I used are:
 - VirtualBox: a hypervisor to run the virtual machines(VMs) and set up an inline routing system
@@ -68,6 +68,16 @@ Finally, edit /etc/nftables.conf and /etc/sysctl.conf as specified [here](docs/s
 
 First, install Apache, MySQL, PHP, and all the associated libraries. Next, create the intentionally vulnerable database, using plaintext to store usernames and passwords. Finally, use insecure practices in the PHP file, like not sanitizing inputs and directly using parameters in database queries.
 
-The installation of Apache, MySQL, and PHP, and creating the intentionally vulnerable database in MySQL is documented [here](docs/setup). The insecure PHP file can be found [here](docs/login.php).
+The installation of Apache, MySQL, and PHP, and creating the intentionally vulnerable database in MySQL is documented [here](docs/setup). The insecure PHP file can be found [here](docs/login.php). The database and website should look like this:
 
+<p align="center">
+  <img src="https://github.com/alall1/suricata-ids/blob/main/images/web-app-database.png" alt="user database">
+</p>
+<p align="center">Vulnsite database, stored in plaintext</p>
 
+<p align="center">
+  <img src="https://github.com/alall1/suricata-ids/blob/main/images/victim-site.png" alt="vulnerable site">
+</p>
+<p align="center">Vulnerable login page</p>
+
+Test the login page by inputting the valid login credentials and invalid login credentials, and try to use SQL injection like "' OR '1'='1'" and "admin' OR '1'='1' --". Make sure the attacker VM can access the website either through a browser or through using curl "url".
