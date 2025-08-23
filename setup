@@ -1,3 +1,22 @@
+# Changing nftables rules to allow IP forwarding (make and write these changes to nftables.conf)
+    sudo nano /etc/nftables.conf
+        table inet filter {
+            chain forward {
+                type filter hook forward priority 0; policy drop;
+        
+                # Allow established/related
+                ct state established,related accept
+        
+                # Forward between interfaces
+                iif "enp0s3" oif "enp0s8" accept
+                iif "enp0s8" oif "enp0s3" accept
+            }
+        }
+
+# Enable IP forwarding in sysctl.conf
+    echo "net.ipv4.ip_forward=1" | sudo tee -a /etc/sysctl.conf
+    sudo sysctl -p
+
 # Downloading and starting the LAMP stack (bash)
     sudo apt install apache2 mariadb-server php libapache2-mod-php php-mysql -y
     sudo systemctl enable apache2 mariadb
@@ -19,25 +38,6 @@
         CREATE USER 'vulnuser'@'localhost' IDENTIFIED BY 'vulnpassword';      # Creating a user for the PHP file to avoid errors with root
         GRANT ALL PRIVILEGES ON vulnsite.* TO 'vulnuser'@'localhost';
         FLUSH PRIVILEGES;
-
-# Changing nftables rules to allow IP forwarding (make and write these changes to nftables.conf)
-    sudo nano /etc/nftables.conf
-        table inet filter {
-            chain forward {
-                type filter hook forward priority 0; policy drop;
-        
-                # Allow established/related
-                ct state established,related accept
-        
-                # Forward between interfaces
-                iif "enp0s3" oif "enp0s8" accept
-                iif "enp0s8" oif "enp0s3" accept
-            }
-        }
-
-# Enable IP forwarding in sysctl.conf
-    echo "net.ipv4.ip_forward=1" | sudo tee -a /etc/sysctl.conf
-    sudo sysctl -p
 
 # Downloading Suricata
     sudo apt update
