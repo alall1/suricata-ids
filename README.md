@@ -9,13 +9,14 @@ The tools I used are:
 - Nmap, SQLmap, hydra, & hping3: Attack tools built-in to Kali used in this project
 
 **Architecture:**
-<Diagram>
 
 Host-only networks were the best way to isolate the lab environment from the Internet, so I used two of them(one for the attacker, one for the victim) to create an inline routing network topology. In the first subnet, the attacker sends packets to one of the IDS's interfaces, also on that same network. The IDS then forwards the packets through its second interface to the victim, on the second subnet. I used inline routing to better simulate how an actual IDS would work, placed at a gateway.
 
-Subnet 1: 10.10.0.0/24, Traffic Flow: Attacker <-> IDS
+![Inline Routing Diagram](docs/inline-routing-diagram.png)
 
-Subnet 2: 10.20.0.0/24, Traffic Flow: Victim <-> IDS
+<p align="center">Subnet 1: 10.10.0.0/24, Traffic Flow: Attacker <-> IDS, Subnet 2: 10.20.0.0/24, Traffic Flow: Victim <-> IDS</p>
+
+The attacker at 10.10.0.2 uses the gateway 10.10.0.10, the IDS VM, to send packets to the victim at 10.20.0.2. Similarly, the victim at 10.20.0.2 uses the gateway 10.20.0.10, again the IDS VM, to send packets back to the attacker at 10.10.0.2. This way, Suricata captures all the packets being sent back and forth, and the IDS VM doesn't have to be set to promiscuous mode.
 # II. Lab Setup
 | VM | OS | Role | Network Mode | IP Address | RAM | CPU |
 |---|---|---|---|---|---|---|
