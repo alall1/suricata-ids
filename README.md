@@ -33,7 +33,7 @@ Next, go to each VM's network settings and add the appropriate host-only adapter
 
 IMAGES OF ATTACKER, VICTIM, and IDS /etc/network/interfaces
 
-Finally, add the necessary nftables rules as specified HERE(ADD LINK TO SETUP).
+Finally, edit /etc/nftables.conf and /etc/sysctl.conf as specified [here](setup).
   
 **Vulnerable Web App Setup:**  
 First, install Apache, MySQL, PHP, and all the associated libraries. Next, create the intentionally vulnerable database, using plaintext to store usernames and passwords. Finally, use insecure practices in the PHP file, like not sanitizing inputs and directly using parameters in database queries.
