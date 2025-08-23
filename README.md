@@ -27,40 +27,40 @@ The attacker at 10.10.0.2 uses the gateway 10.10.0.10, the IDS VM, to send packe
 **Inline Routing Setup:** 
 First, I started with setting up the inline routing network, as inline routing is the foundation of this project. The first step is to navigate to the network manager in VirtualBox and add two host-only networks. Inline routing can also be done on a single network, but I decided to make two separate networks so the distinction between the attacker and the victim would be clear. 
 
-![Network Manager](docs/network-manager.png)
+![Network Manager](images/network-manager.png)
 <p align="center">VirtualBox Network Manager Host-only Networks</p>
 
 Next, go to each VM's network settings and add the appropriate host-only adapters: vboxnetA for the attacker, vboxnetB for the victim, and two adapters for vboxnetA and vboxnetB on the IDS VM. To verify, run each VM and check the networks with "ip a" on the command line. Each one should have an IP in their specific subnets, and for the IDS VM it should have two networks(eth0 and eth1 or enp0s8 and enp0s9) with IPs in both subnets. I would recommend adding a static IP for the IDS VM, as well as the attacker and victim. You can do this by modifying /etc/network/interfaces, which you will need to add these changes to enable IP forwarding:
 
 <p align="center">
-  <img src="https://github.com/alall1/suricata-ids/blob/main/docs/interfaces-attacker.png" alt="attacker/etc/network/interfaces">
+  <img src="https://github.com/alall1/suricata-ids/blob/main/images/interfaces-attacker.png" alt="attacker/etc/network/interfaces">
 </p>
 <p align="center">Attacker /etc/network/interfaces</p>
 
 <p align="center">
-  <img src="https://github.com/alall1/suricata-ids/blob/main/docs/interfaces-victim.png" alt="victim /etc/network/interfaces">
+  <img src="https://github.com/alall1/suricata-ids/blob/main/images/interfaces-victim.png" alt="victim /etc/network/interfaces">
 </p>
 <p align="center">Victim /etc/network/interfaces</p>
 
 <p align="center">
-  <img src="https://github.com/alall1/suricata-ids/blob/main/docs/interfaces-ids.png" alt="ids /etc/network/interfaces">
+  <img src="https://github.com/alall1/suricata-ids/blob/main/images/interfaces-ids.png" alt="ids /etc/network/interfaces">
 </p>
 <p align="center">IDS /etc/network/interfaces</p>
 
-Finally, edit /etc/nftables.conf and /etc/sysctl.conf as specified [here](setup). From the attacker VM, ping the IP address of the victim VM and vice versa to make sure the IP forwarding works. From the IDS VM, use tcpdump on one of the networks to view the ICMP traffic going back and forth between the attacker and the victim. 
+Finally, edit /etc/nftables.conf and /etc/sysctl.conf as specified [here](docs/setup). From the attacker VM, ping the IP address of the victim VM and vice versa to make sure the IP forwarding works. From the IDS VM, use tcpdump on one of the networks to view the ICMP traffic going back and forth between the attacker and the victim. 
 
 <p align="center">
-  <img src="https://github.com/alall1/suricata-ids/blob/main/docs/ping-attacker.png" alt="attacker pings">
+  <img src="https://github.com/alall1/suricata-ids/blob/main/images/ping-attacker.png" alt="attacker pings">
 </p>
 <p align="center">Attacker pinging victim IP</p>
 
 <p align="center">
-  <img src="https://github.com/alall1/suricata-ids/blob/main/docs/ping-victim.png" alt="victim pings">
+  <img src="https://github.com/alall1/suricata-ids/blob/main/images/ping-victim.png" alt="victim pings">
 </p>
 <p align="center">Victim pinging attacker IP</p>
 
 <p align="center">
-  <img src="https://github.com/alall1/suricata-ids/blob/main/docs/ping-idstcpdump.png" alt="ids tcpdump">
+  <img src="https://github.com/alall1/suricata-ids/blob/main/images/ping-idstcpdump.png" alt="ids tcpdump">
 </p>
 <p align="center">tcpdump from both enp0s8 and enp0s9 on IDS VM</p>
   
@@ -68,6 +68,6 @@ Finally, edit /etc/nftables.conf and /etc/sysctl.conf as specified [here](setup)
 
 First, install Apache, MySQL, PHP, and all the associated libraries. Next, create the intentionally vulnerable database, using plaintext to store usernames and passwords. Finally, use insecure practices in the PHP file, like not sanitizing inputs and directly using parameters in database queries.
 
-The installation of Apache, MySQL, and PHP, and creating the intentionally vulnerable database in MySQL is documented [here](setup).
+The installation of Apache, MySQL, and PHP, and creating the intentionally vulnerable database in MySQL is documented [here](docs/setup). The insecure PHP file can be found [here](docs/login.php).
 
 
