@@ -68,3 +68,6 @@
           - type: suricata
             path: /var/log/suricata/eve.json
             mode: tail
+
+# Running EveBox as a oneshot(reads eve.json for visualization of alerts)
+    evebox oneshot /var/log/suricata/eve.json
