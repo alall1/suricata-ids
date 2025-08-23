@@ -8,8 +8,8 @@
                 ct state established,related accept
         
                 # Forward between interfaces
-                iif "enp0s3" oif "enp0s8" accept
-                iif "enp0s8" oif "enp0s3" accept
+                iif "enp0s8" oif "enp0s9" accept        # the two networks the IDS is on(could be eth0 and eth1)
+                iif "enp0s9" oif "enp0s8" accept
             }
         }
 
@@ -52,11 +52,11 @@
         rule-files:
           - suricata.rules
         af-packet:
-          - interface: eth1
+          - interface: enp0s8        # host-only network 1
             cluster-id: 99
             cluster-type: cluster_flow
             defrag: yes
-          - interface: eth2
+          - interface: enp0s9        # host-only network 2
             cluster-id: 100
             cluster-type: cluster_flow
             defrag: yes
