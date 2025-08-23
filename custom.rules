@@ -1,54 +1,54 @@
 # Nmap scan rule
-alert tcp $EXTERNAL_NET any -> $HOME_NET any ( \
-    msg:"Nmap SYN Scan Detected"; \
-    flags:S; \
-    threshold:type both, track by_src, count 20, seconds 3; \
-    classtype:attempted-recon; \
-    sid:100001; rev:1; \
-)
-
-# \ - continue line(otherwise Suricata won't be able to read the full rule)
-# alert tcp – log and alert for TCP
-# any any – any attacker IP/port
-# -> $HOME_NET any – traffic to protected net from any port
-# msg: – alert message
-# flags:S; – looking for SYN flags
-# threshold:type both, track by_src, count 20, seconds 3 – if 20> SYN packets from 1 src in < 3s
-# classtype:attempted-recon – attack class
-# sid:100001; rev:1; – signature ID and rule revision
+    alert tcp $EXTERNAL_NET any -> $HOME_NET any ( \
+        msg:"Nmap SYN Scan Detected"; \
+        flags:S; \
+        threshold:type both, track by_src, count 20, seconds 3; \
+        classtype:attempted-recon; \
+        sid:100001; rev:1; \
+    )
+    
+    \ - continue line(otherwise Suricata won't be able to read the full rule)
+    alert tcp – log and alert for TCP
+    any any – any attacker IP/port
+    -> $HOME_NET any – traffic to protected net from any port
+    msg: – alert message
+    flags:S; – looking for SYN flags
+    threshold:type both, track by_src, count 20, seconds 3 – if 20> SYN packets from 1 src in < 3s
+    classtype:attempted-recon – attack class
+    sid:100001; rev:1; – signature ID and rule revision
 
 # SQLmap rule
-alert http $EXTERNAL_NET any -> $HOME_NET any ( \
-    msg:"SQL Injection Attempt"; \
-    flow:to_server,established; \
-    content:"'sqlmap"; http_user_agent; \
-    classtype:web-application-attack; \
-    sid:100002; rev:1; \
-)
-
-# flow:to_server,established; – only traffic going to the server or established TCP connection
-# content:"sqlmap"; http_user_agent; – what content Suricata is looking for, specifically in the user-agent header in HTTP requests
+    alert http $EXTERNAL_NET any -> $HOME_NET any ( \
+        msg:"SQL Injection Attempt"; \
+        flow:to_server,established; \
+        content:"'sqlmap"; http_user_agent; \
+        classtype:web-application-attack; \
+        sid:100002; rev:1; \
+    )
+    
+    flow:to_server,established; – only traffic going to the server or established TCP connection
+    content:"sqlmap"; http_user_agent; – what content Suricata is looking for, specifically in the user-agent header in HTTP requests
 
 # Brute force login rule
-alert http $HOME_NET any -> $EXTERNAL_NET any ( \
-    msg:"Brute Force Login Attempt"; \
-    flow:to_client,established; \
-    content:"Invalid username or password"; nocase; \
-    threshold:type both, track by_dst, count 10, seconds 30; \
-    sid:100003; rev:2; \
-)
-
-# content:"Invalid username or password"; nocase; – Invalid requests from victim to attacker
-# threshold:type both, track by_dst, count 10, seconds 30; – 1 dst gets 10 invalid login warnings in 30 seconds
+    alert http $HOME_NET any -> $EXTERNAL_NET any ( \
+        msg:"Brute Force Login Attempt"; \
+        flow:to_client,established; \
+        content:"Invalid username or password"; nocase; \
+        threshold:type both, track by_dst, count 10, seconds 30; \
+        sid:100003; rev:2; \
+    )
+    
+    content:"Invalid username or password"; nocase; – Invalid requests from victim to attacker
+    threshold:type both, track by_dst, count 10, seconds 30; – 1 dst gets 10 invalid login warnings in 30 seconds
 
 # DoS attack rule
-alert tcp $EXTERNAL_NET any -> $HOME_NET 80 ( \
-    msg:"DoS TCP SYN Flood"; \
-    flags:S; \
-    flow:stateless; \
-    threshold:type both, track by_src, count 100, seconds 1; \
-    classtype:attempted-dos; \
-    sid:100004; rev:1; \
-)
-
-# threshold:type both, track by_src, count 100, seconds 1; – 100 SYN flags sent in <1 second
+    alert tcp $EXTERNAL_NET any -> $HOME_NET 80 ( \
+        msg:"DoS TCP SYN Flood"; \
+        flags:S; \
+        flow:stateless; \
+        threshold:type both, track by_src, count 100, seconds 1; \
+        classtype:attempted-dos; \
+        sid:100004; rev:1; \
+    )
+    
+    threshold:type both, track by_src, count 100, seconds 1; – 100 SYN flags sent in <1 second
