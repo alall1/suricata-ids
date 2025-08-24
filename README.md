@@ -199,9 +199,11 @@ From the homepage, an overview of the alerts are shown: the timestamp, source an
 
 In this view, protocol, source and destination ports, network interface, attack category, and more are shown. Through EveBox's web interface, cybersecurity analysts can analyze where the attack came from, how many bytes were sent by the attacker, and even HTTP methods and User-Agent headers. Having a neat way to view alerts is important, as it avoids wasting time trying to understand raw alerts straight from Suricata. 
 
-**Rule Revisions:**
+The original Suricata rules I used were significantly lacking, generating alerts during the wrong attack or not triggering at all. I had to make modifications to the rules in order to pick up the appropriate activity and generate an alert. All the updated rules and explanations can be found [here](docs/rules). 
 
-The original Suricata rules I used were significantly lacking, generating alerts during the wrong attack or not triggering at all. First, I had to modify my nmap port scan detection rule. Originally, it looked like: 
+**nmap Rule Revision:**
+
+First, I had to modify my nmap port scan detection rule. Originally, it looked like this: 
 
     alert tcp any any -> $HOME_NET any ( \
         msg:"Nmap SYN Scan Detected"; \
@@ -211,4 +213,94 @@ The original Suricata rules I used were significantly lacking, generating alerts
         sid:100001; rev:1; \
     )
 
-With this configuration, 
+With this configuration, it essentially is looking for SYN flags from established connections coming to any port, as long as there are more than 20 packets sent within 3 seconds. This would pick up sqlmap and hydra attempts, because sqlmap and hydra both send many SYN packets to the web application to try new injections or passwords. Fortunately it doesn't pick up DoS attempts, because it only looks at established TCP connections. To fix this, I made one simple change: I made the rule only look for traffic going to ports that were not the HTTP port(port 80). A port scan will send many packets to many different ports, so this eliminates false positives caused by connections to the web application while also maintaining the rule functionality. The new rule is: 
+
+    alert tcp $EXTERNAL_NET any -> $HOME_NET !80 ( \
+        msg:"Nmap SYN Scan Detected"; \
+        flags:S; \
+        flow:to_server;
+        threshold:type both, track by_src, count 5, seconds 60; \
+        classtype:attempted-recon; \
+        sid:100001; rev:2; \
+    )
+
+**sqlmap Rule Revision:**
+
+Next, my SQL injection rule had to be modified because it wasn't picking up any sqlmap activity. My first iteration was:
+
+    alert http any any -> $HOME_NET any ( \
+        msg:"SQL Injection Attack"; \
+        flow:to_server,established; \
+        content:"' OR 1=1"; nocase; \
+        classtype:web-application-attack; \
+        sid:100002; rev:1; \
+    )
+
+This rule is looking for content flowing to the web application with the specific injection attack "' OR 1=1". This seems like a good strategy, but sqlmap sends a variety of injection payloads, not just this specific example. Even so, it should be triggered at least once, but no alert was generated after multiple attempts. This is because sqlmap sends URL-encoded payloads, replacing non-ASCII characters with "%" and two hexadecimal numbers and replacing spaces with "+" symbols. So while the packets are routed through the IDS VM, they would be URL-encoded and wouldn't generate this specific injection alert. To fix this, I instead focused directly on sqlmap injection attempts, by looking for "sqlmap" within the User-Agent header of the HTTP request. With this modification, the rule picked up every sqlmap attack because every sqlmap HTTP request contains "sqlmap" in the User-Agent header. However, this will only generate alerts when sqlmap is used, not standalone injection attempts. The modified rule is:
+
+    alert http $EXTERNAL_NET any -> $HOME_NET any ( \
+        msg:"SQLmap Injection Attack"; \
+        flow:to_server,established; \
+        content:"'sqlmap"; http_user_agent; \
+        classtype:web-application-attack; \
+        sid:100002; rev:2; \
+    )
+
+**Brute-Force Rule Revisions:**
+
+The original rule for detecting brute-force login attempts, such as a hydra attack, would consistently trigger, but still required a few tweaks. The original version was: 
+
+    alert http any any -> $HOME_NET any (
+        msg:"ET WEB Brute Force Login Attempt"; 
+        flow:to_server,established; 
+        content:"POST"; http_method; 
+        threshold:type both, track by_src, count 10, seconds 30; 
+        classtype:attempted-recon; 
+        sid:100003; rev:1;
+    )
+
+This version generated alerts whenever more than 10 POST requests were sent from one source to the web application in 30 seconds or less. This worked for detecting hydra, as hydra would send hundreds of POST requests per second. However, to improve the rule's capability of detecting brute-force attacks, I modified it to instead look for packets moving from the protected subnet to the external net. Specifically, packets being sent out by the server containing the invalid login message. Although the two rules function similarly when a brute-force attack is executed, looking specifically for an IP outside the net receiving multiple invalid login messages is the best practice for brute-force detection. The new rule is:
+
+    alert http $HOME_NET any -> $EXTERNAL_NET any ( \
+        msg:"Brute Force Login Attempt"; \
+        flow:to_client,established; \
+        content:"Invalid username or password"; nocase; \
+        threshold:type both, track by_dst, count 10, seconds 30; \
+        classtype:attempted-admin; \
+        sid:100003; rev:2; \
+    )
+
+**DoS Rule Revisions:**
+
+The first DoS rule I created only generated alerts when a hydra attack was executed and not when the DoS command was executed. Originally it looked like this:
+
+    alert tcp any any -> $HOME_NET 80 (
+        msg:"DoS TCP SYN Flood"; 
+        flags:S; 
+        threshold:type both, track by_src, count 100, seconds 1; 
+        classtype:attempted-dos; 
+        sid:100004; rev:1;
+    )
+
+The problem was that the rule was too sensitive, meaning the many SYN flags sent from hydra were being triggering the rule. It didn't pick up the execution of hping3, however, because this rule is looking specifically for SYN flags from established connections. Hping3 does not complete the TCP handshake, so the SYN flags sent during execution aren't included in this rule. As a way to avoid generating alerts during the hydra attack, I modified the rule to look specifically for GET requests, instead of the POST requests used by hydra. My second iteration looked like this:
+
+    alert http $EXTERNAL_NET any -> $HOME_NET any (
+        msg:"Potential DoS Attack - Excessive GET Flood";
+        flow:to_server,established;
+        content:"GET"; http_method;
+        threshold:type both, track by_src, count 200, seconds 5;
+        sid:100004; rev:2;
+    )
+
+However, this did not generate alerts either, because hping3 did not send GET requests to the HTTP port. Instead, hping3 sends SYN packets, initiating a TCP handshake but never completing it to engage system resources. In order to generate alerts specifically for a hping3 SYN flood, I changed my rule back to looking for mass SYN packets sent to the web application, except raising the threshold significantly and looking specifically for SYN packets that aren't part of an established connection. Instead of using "threshold", I used "detection_filter", which generates alerts multiple times until the rate of SYN packets to the web application fell below the detection rate. This way, instead of generating one alert for an entire DoS attack, alerts will be generated throughout the duration of the attack. The finalized rule is:
+
+    alert tcp $EXTERNAL_NET any -> $HOME_NET 80 ( \
+        msg:"Potential TCP SYN Flood"; \
+        flags:S; \
+        flow:stateless; \
+        detection_filter:type both, track by_src, count 500, seconds 1; \
+        classtype:attempted-dos; \
+        sid:100004; rev:3; \
+    )
+
+**Analysis:**
