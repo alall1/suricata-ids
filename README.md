@@ -80,4 +80,12 @@ The installation of Apache, MySQL, and PHP, and creating the intentionally vulne
 </p>
 <p align="center">Vulnerable login page</p>
 
-Test the login page by inputting the valid login credentials and invalid login credentials, and try to use SQL injection like "' OR '1'='1'" and "admin' OR '1'='1' --". Make sure the attacker VM can access the website either through a browser or through using curl "url".
+Test the login page by inputting the valid login credentials and invalid login credentials, and try to use SQL injection like "' OR '1'='1'" and "admin' OR '1'='1' --". Make sure the attacker VM can access the website either through a browser or through using curl "login page url".
+
+**Suricata and EveBox Setup:**
+
+The final step for setting up the lab is installing Suricata and EveBox. After installation, configure /etc/suricata/suricata.yaml and /etc/evebox/evebox.yaml as shown [here](docs/setup). Then, create a custom.rules file in /etc/suricata/rules with the rules given [here](docs/rules), as well as any other attacks that should be detected. Ensure that Suricata writes alerts to eve.json in suricata.yaml and that EveBox is pointing towards eve.json in evebox.yaml. To test the functionality of Suricata, run a basic nmap scan like "nmap -F 'victim IP'", and check /var/log/suricata/fast.log for quick alerts, and /var/log/suricata/eve.json to see if Suricata is logging alerts into eve.json. 
+
+To run Suricata in the foreground, use the CLI command "sudo suricata -c /etc/suricata/suricata.yaml --af-packet". In this project, I ran Suricata in the foreground, so I could control when it was active, but realistically it would always be active in the background. To run EveBox for analysis of the alerts currently in eve.json, use the CLI command "evebox oneshot /var/log/suricata/eve.json". Again, EveBox would realistically be constantly ingesting alerts from eve.json to be viewed at any time, but I found it easier to use oneshot for this project.
+
+
