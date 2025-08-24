@@ -179,7 +179,7 @@ Note that you may have to use "sudo" to use hping3 on Kali. In the screenshot be
 </p>
 <p align="center">Running DoS attack with hping3 --flood from attacker VM</p>
 
-# IV. Detection & Analysis
+# IV. Detection
 
 **Detection:**
 
@@ -199,7 +199,10 @@ From the homepage, an overview of the alerts are shown: the timestamp, source an
 
 In this view, protocol, source and destination ports, network interface, attack category, and more are shown. Through EveBox's web interface, cybersecurity analysts can analyze where the attack came from, how many bytes were sent by the attacker, and even HTTP methods and User-Agent headers. Having a neat way to view alerts is important, as it avoids wasting time trying to understand raw alerts straight from Suricata. 
 
+# IV. Revision & Analysis
+
 The original Suricata rules I used were significantly lacking, generating alerts during the wrong attack or not triggering at all. I had to make modifications to the rules in order to pick up the appropriate activity and generate an alert. All the updated rules and explanations can be found [here](docs/rules). 
+
 
 **nmap Rule Revision:**
 
@@ -303,4 +306,8 @@ However, this did not generate alerts either, because hping3 did not send GET re
         sid:100004; rev:3; \
     )
 
-**Analysis:**
+**Analysis of Revised Rules:**
+
+Overall, the revised rules tested well against their respective attacks, able to detect and generate alerts for each instance of the attack. For the purpose of detecting the specific attack software used, the rules work great, but it is important to address the significant gaps of each rule. To detect more advanced versions of port scans, SQL injections, brute-force attacks, and DoS/DDoS attacks, many more revisions and rules will have to be implemented.
+
+The nmap scan detection rule worked well in testing, even detecting nmap's slowest scan rate(-T1). It consistently generated alerts for the execution of nmap's SYN scan, but adding a simple scan delay allowed nmap to evade detection. There are many other nmap scan options like fragmentation of packets or decoys to avoid generating alerts or mislead IDSs, not to mention the different scan types like ping scans and UDP scans. Also, the low detection threshold(5 SYN packets in 60 seconds) is good for identifying patient attackers, but if other TCP ports were open, the rule would frequently generate false positives. 
