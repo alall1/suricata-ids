@@ -94,17 +94,17 @@ To run Suricata in the foreground, use the CLI command "sudo suricata -c /etc/su
 <p align="center">Running Suricata in the foreground</p>
 
 <p align="center">
-  <img src="https://github.com/alall1/suricata-ids/blob/main/images/attacker-test-nmap.png" alt="test nmap scan">
+  <img src="https://github.com/alall1/suricata-ids/blob/main/images/attacks-alerts/attacker-test-nmap.png" alt="test nmap scan">
 </p>
 <p align="center">Running a quick test nmap scan from the attacker</p>
 
 <p align="center">
-  <img src="https://github.com/alall1/suricata-ids/blob/main/images/IDS-test-nmap.png" alt="fast.log and eve.json">
+  <img src="https://github.com/alall1/suricata-ids/blob/main/images/attacks-alerts/IDS-test-nmap.png" alt="fast.log and eve.json">
 </p>
 <p align="center">Logs in fast.log and eve.json</p>
 
 <p align="center">
-  <img src="https://github.com/alall1/suricata-ids/blob/main/images/IDS-evebox-test-nmap.png" alt="evebox nmap test">
+  <img src="https://github.com/alall1/suricata-ids/blob/main/images/attacks-alerts/IDS-evebox-test-nmap.png" alt="evebox nmap test">
 </p>
 <p align="center">Viewing the test nmap scan in EveBox</p>
 
