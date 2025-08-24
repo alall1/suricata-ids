@@ -6,7 +6,8 @@
         classtype:attempted-recon; \
         sid:100001; rev:1; \
     )
-    
+
+    # Explanation
     \ - continue line(otherwise Suricata won't be able to read the full rule)
     alert tcp – log and alert for TCP
     any any – any attacker IP/port
@@ -25,7 +26,8 @@
         classtype:web-application-attack; \
         sid:100002; rev:1; \
     )
-    
+
+    # Explanation
     flow:to_server,established; – only traffic going to the server or established TCP connection
     content:"sqlmap"; http_user_agent; – what content Suricata is looking for, specifically in the user-agent header in HTTP requests
 
@@ -37,7 +39,8 @@
         threshold:type both, track by_dst, count 10, seconds 30; \
         sid:100003; rev:2; \
     )
-    
+
+    # Explanation
     content:"Invalid username or password"; nocase; – Invalid requests from victim to attacker
     threshold:type both, track by_dst, count 10, seconds 30; – 1 dst gets 10 invalid login warnings in 30 seconds
 
@@ -50,5 +53,6 @@
         classtype:attempted-dos; \
         sid:100004; rev:1; \
     )
-    
+
+    # Explanation
     threshold:type both, track by_src, count 100, seconds 1; – 100 SYN flags sent in <1 second
