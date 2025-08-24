@@ -112,3 +112,11 @@ With this, setup is complete. Inline routing has been configured, the intentiona
 
 # III. Attacks and Alerts
 
+For this project, I ran four attacks: nmap scan for reconnaissance, SQLmap to exploit injection vulnerabilities, hydra to brute-force simple passwords, and a simple DoS attack with hping3. All attack commands and explanations can be found [here](docs/attacks). Associated Suricata rules and explanations can be found [here](docs/rules). 
+
+The first attack I used was a simple nmap scan of all of the ports on the victim's IP address. The command for the attack is "nmap -sS -p- -T4 <victim_ip>". The only open ports found were port 22 (SSH) and port 80 (HTTP). The HTTP port is open because of the web application running on the victim's system, a potential entry point for attackers.
+
+<p align="center">
+  <img src="https://github.com/alall1/suricata-ids/blob/main/images/attacks-alerts/attack-nmap.png" alt="nmap scan">
+</p>
+<p align="center">Running nmap scan from attacker VM</p>
