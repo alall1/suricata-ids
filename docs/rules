@@ -1,30 +1,32 @@
 # Nmap scan rule
-    alert tcp $EXTERNAL_NET any -> $HOME_NET any ( \
+    alert tcp $EXTERNAL_NET any -> $HOME_NET !80 ( \
         msg:"Nmap SYN Scan Detected"; \
         flags:S; \
-        threshold:type both, track by_src, count 20, seconds 3; \
+        flow:to_server;
+        threshold:type both, track by_src, count 5, seconds 60; \
         classtype:attempted-recon; \
-        sid:100001; rev:1; \
+        sid:100001; rev:2; \
     )
 
     # Explanation
     \ - continue line(otherwise Suricata won't be able to read the full rule)
     alert tcp – log and alert for TCP
     any any – any attacker IP/port
-    -> $HOME_NET any – traffic to protected net from any port
+    -> $HOME_NET !80 – traffic to any protected net port that isn't port 80
     msg: – alert message
     flags:S; – looking for SYN flags
+    flow: to_server - traffic flowing to the victim
     threshold:type both, track by_src, count 20, seconds 3 – if 20> SYN packets from 1 src in < 3s
     classtype:attempted-recon – attack class
     sid:100001; rev:1; – signature ID and rule revision
 
 # SQLmap rule
     alert http $EXTERNAL_NET any -> $HOME_NET any ( \
-        msg:"SQL Injection Attempt"; \
+        msg:"SQLmap Injection Attack"; \
         flow:to_server,established; \
         content:"'sqlmap"; http_user_agent; \
         classtype:web-application-attack; \
-        sid:100002; rev:1; \
+        sid:100002; rev:2; \
     )
 
     # Explanation
@@ -37,6 +39,7 @@
         flow:to_client,established; \
         content:"Invalid username or password"; nocase; \
         threshold:type both, track by_dst, count 10, seconds 30; \
+        classtype:attempted-admin; \
         sid:100003; rev:2; \
     )
 
@@ -46,13 +49,14 @@
 
 # DoS attack rule
     alert tcp $EXTERNAL_NET any -> $HOME_NET 80 ( \
-        msg:"DoS TCP SYN Flood"; \
+        msg:"Potential TCP SYN Flood"; \
         flags:S; \
         flow:stateless; \
-        threshold:type both, track by_src, count 100, seconds 1; \
+        detection_filter:type both, track by_src, count 500, seconds 1; \
         classtype:attempted-dos; \
-        sid:100004; rev:1; \
+        sid:100004; rev:3; \
     )
 
     # Explanation
+    flow:stateless - not looking for established connections, just looking for SYN flags
     threshold:type both, track by_src, count 100, seconds 1; – 100 SYN flags sent in <1 second
