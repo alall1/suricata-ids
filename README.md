@@ -1,5 +1,5 @@
 # I. Introduction
-To gain hands-on experience with networks, cyberattacks, and intrusion detection systems(IDS), I created a virtual environment to simulate attacks on a vulnerable web application. To detect the attacks, I wrote custom rules for specific attacks in Suricata and used Evebox for visualizing alerts. This project has improved my skills in network architecture, network security, intrusion detection, Linux, SQL, and PHP, as well as using virtual machines.
+To gain hands-on experience with networks, cyberattacks, and intrusion detection systems(IDS), I created a virtual environment to simulate attacks on a vulnerable web application. To detect the attacks, I wrote custom rules for specific attacks in Suricata and used Evebox for visualizing alerts. This project has improved my skills in network architecture, network security, intrusion detection, Linux, SQL, and PHP.
 
 The tools I used are:
 - VirtualBox: a hypervisor to run the virtual machines(VMs) and set up an inline routing system
@@ -199,7 +199,7 @@ From the homepage, an overview of the alerts are shown: the timestamp, source an
 
 In this view, protocol, source and destination ports, network interface, attack category, and more are shown. Through EveBox's web interface, cybersecurity analysts can analyze where the attack came from, how many bytes were sent by the attacker, and even HTTP methods and User-Agent headers. Having a neat way to view alerts is important, as it avoids wasting time trying to understand raw alerts straight from Suricata. 
 
-# IV. Revision & Analysis
+# V. Revision & Analysis
 
 The original Suricata rules I used were significantly lacking, generating alerts during the wrong attack or not triggering at all. I had to make modifications to the rules in order to pick up the appropriate activity and generate an alert. All the updated rules and explanations can be found [here](docs/rules). 
 
@@ -314,7 +314,7 @@ The nmap scan detection rule worked well in testing, even detecting nmap's slowe
 
 The rule for sqlmap detected every execution of sqlmap, without fail. This is because sqlmap always sends HTTP requests with "sqlmap" in its User-Agent header. However, looking specifically for "sqlmap" in the User-Agent line makes this rule specialized to only sqlmap attacks. Realistically, attackers wouldn't have the name of their automated SQL injection software anywhere in their HTTP requests. To improve detection of SQL injection attempts, multiple rules to detect various injection strategies and common characters used in injections, like the single quote, would be best practice. The rules would have to be able to decode URL-encoded text, so that attacks like sqlmap wouldn't evade detection.
 
-The brute-force detection rule serves its purpose well, observing for multiple invalid login attempts from one source. I believe that this would work up well in a realistic environment, with the only problem being attackers using more and more sophisticated brute-force login software. One problem this rule could face is a brute-force script that alternates between IP addresses, as it only looks for multiple invalid login attempts coming from one source. One way to alleviate this problem is to have a separate rule that looks for multiple invalid login attempts in succession from any source, to at least indicate a potential brute-force attack.
+The brute-force detection rule is effective, observing for multiple invalid login attempts from one source. I believe that this would work up well in a realistic environment, with the only problem being attackers using more and more sophisticated brute-force login software. One problem this rule could face is a brute-force script that alternates between IP addresses, as it only looks for multiple invalid login attempts coming from one source. One way to alleviate this problem is to have a separate rule that looks for multiple invalid login attempts in succession from any source, to at least indicate a potential brute-force attack.
 
 Finally, the DoS rule faces the same problem as the sqlmap rule. It is specialized for SYN floods, only on port 80. There are many different types of DoS and DDoS attacks, each needing their own IDS rule. Another problem with this rule is the use of detection_filter instead of threshold. detection_filter generates alerts as long as the attack goes on, and in this case generates tens of thousands of alerts per second of the attack. The screenshot below is the detailed view of the alerts generated after running the hping3 command for approximately 1 second--there were 88872 alerts generated in that single second. A better way to log DoS attacks is to have a single alert with start and end timestamps for the attack.
 
@@ -322,3 +322,13 @@ Finally, the DoS rule faces the same problem as the sqlmap rule. It is specializ
   <img src="https://github.com/alall1/suricata-ids/blob/main/images/attacks-alerts/IDS-evebox-DoS.png" alt="DoS alert">
 </p>
 <p align="center">Detailed view of DoS alert, 88872 occurrences</p>
+
+Overall, the custom Suricata rules detected >90% of all simulated attacks, but lack the breadth necessary for real-world scenarios. These rules would be effective used in combination with other, broader IDS rules.
+
+# VI. Conclusion
+
+This project was a valuable learning opportunity for me, building my confidence with security systems and setting up an end-to-end lab for future projects. Specifically, I gained hands-on experience with configuring and managing Linux-based virtual machines, as well as practical knowledge of networking concepts like host-only adapters, subnetting, and inline routing. Creating and exploiting my own vulnerable web application helped me understand the mechanics behind SQL injection and the significance of input sanitization. I also learned how to deploy Suricata with my own custom rules and integrate it with EveBox for better visualization, observing firsthand how intrusion detection systems capture and log malicious activity.
+
+One critical takeaway from this project is the importance of organized documentation throughout the entire process. I chose to take minimal, disorganized notes during the development process, which proved to be a mistake later on when compiling this report. For future projects, I will thoroughly document creation and testing, instead of pushing it to the end of the project timeline.
+
+This project reinforced the importance of defense-in-depth; even if one control, like input validation, fails, attacks can be stopped by another control, like an IDS/IPS combination. It provides me with a solid foundation for expanding into intrusion prevention, SIEM integration, and blue-teaming in the future.
